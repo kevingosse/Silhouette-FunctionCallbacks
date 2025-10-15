@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="FunctionEnterLeaveCallbacks/FunctionEnterLeaveCallbacks.vcxproj" Id="ec86cb5f-ca88-4284-8823-c920c4b2b015">
+    <BuildType Project="Release" />
+  </Project>
+  <Project Path="Profiler/Profiler.csproj">
+    <BuildDependency Project="FunctionEnterLeaveCallbacks/FunctionEnterLeaveCallbacks.vcxproj" />
+  </Project>
+  <Project Path="TestConsoleApp/TestConsoleApp.csproj" Id="d58c99f7-ff29-42ef-9b3e-ebdbcc586781" />
+</Solution>
