@@ -1,24 +1,26 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
-#include <iostream>
-
+// Type definitions expected by the profiler API
 typedef UINT_PTR FunctionID;
 typedef union { FunctionID functionID; UINT_PTR clientID; } FunctionIDOrClientID;
 typedef UINT_PTR COR_PRF_ELT_INFO;
 
+// The assembly stubs declared in asmhelpers.asm
 extern "C" {
 	void EnterNaked();
 	void LeaveNaked();
 	void TailcallNaked();
 }
 
+// The managed callbacks that will be provided at runtime
 namespace {
 	void* enterCallback;
 	void* leaveCallback;
 	void* tailcallCallback;
 }
 
+// This is the function that will be called from the managed side to register the managed callbacks
 EXTERN_C __declspec(dllexport) void __stdcall RegisterCallbacks(void** enter, void** leave, void** tailcall)
 {
 	if (enter) {
@@ -40,8 +42,7 @@ EXTERN_C __declspec(dllexport) void __stdcall RegisterCallbacks(void** enter, vo
 EXTERN_C void STDMETHODCALLTYPE EnterStub(FunctionIDOrClientID functionId, COR_PRF_ELT_INFO eltInfo)
 {
 	if (enterCallback) {
-		typedef void (STDMETHODCALLTYPE* EnterCallbackType)(FunctionIDOrClientID, COR_PRF_ELT_INFO);
-		EnterCallbackType callback = reinterpret_cast<EnterCallbackType>(enterCallback);
+		auto callback = reinterpret_cast<void (STDMETHODCALLTYPE*)(FunctionIDOrClientID, COR_PRF_ELT_INFO)>(enterCallback);
 		callback(functionId, eltInfo);
 	}
 }
@@ -49,8 +50,7 @@ EXTERN_C void STDMETHODCALLTYPE EnterStub(FunctionIDOrClientID functionId, COR_P
 EXTERN_C void STDMETHODCALLTYPE LeaveStub(FunctionID functionId, COR_PRF_ELT_INFO eltInfo)
 {
 	if (leaveCallback) {
-		typedef void (STDMETHODCALLTYPE* LeaveCallbackType)(FunctionID, COR_PRF_ELT_INFO);
-		LeaveCallbackType callback = reinterpret_cast<LeaveCallbackType>(leaveCallback);
+		auto callback = reinterpret_cast<void (STDMETHODCALLTYPE*)(FunctionID, COR_PRF_ELT_INFO)>(leaveCallback);
 		callback(functionId, eltInfo);
 	}
 }
@@ -58,8 +58,7 @@ EXTERN_C void STDMETHODCALLTYPE LeaveStub(FunctionID functionId, COR_PRF_ELT_INF
 EXTERN_C void STDMETHODCALLTYPE TailcallStub(FunctionID functionId, COR_PRF_ELT_INFO eltInfo)
 {
 	if (tailcallCallback) {
-		typedef void (STDMETHODCALLTYPE* TailcallCallbackType)(FunctionID, COR_PRF_ELT_INFO);
-		TailcallCallbackType callback = reinterpret_cast<TailcallCallbackType>(tailcallCallback);
+		auto callback = reinterpret_cast<void (STDMETHODCALLTYPE*)(FunctionID, COR_PRF_ELT_INFO)>(tailcallCallback);
 		callback(functionId, eltInfo);
 	}
 }

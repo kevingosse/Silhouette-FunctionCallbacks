@@ -26,15 +26,28 @@ internal unsafe class CorProfiler : CorProfilerCallback11Base
         {
             Console.WriteLine($"This profiler requires ICorProfilerInfo13 ({iCorProfilerInfoVersion})");
             return HResult.E_FAIL;
-        }
+        }   
 
-        var result = ICorProfilerInfo5.SetEventMask2(
-            COR_PRF_MONITOR.COR_PRF_MONITOR_ENTERLEAVE | COR_PRF_MONITOR.COR_PRF_ENABLE_FUNCTION_ARGS | COR_PRF_MONITOR.COR_PRF_ENABLE_FUNCTION_RETVAL | COR_PRF_MONITOR.COR_PRF_ENABLE_FRAME_INFO,
-            COR_PRF_HIGH_MONITOR.COR_PRF_HIGH_MONITOR_NONE);
+        var eventMask = COR_PRF_MONITOR.COR_PRF_MONITOR_ENTERLEAVE
+            | COR_PRF_MONITOR.COR_PRF_ENABLE_FUNCTION_ARGS
+            | COR_PRF_MONITOR.COR_PRF_ENABLE_FUNCTION_RETVAL
+            | COR_PRF_MONITOR.COR_PRF_ENABLE_FRAME_INFO;
+
+        var result = ICorProfilerInfo5.SetEventMask2(eventMask, COR_PRF_HIGH_MONITOR.COR_PRF_HIGH_MONITOR_NONE);
+
+        if (!result)
+        {
+            Console.WriteLine($"SetEventMask2 failed with {result}");
+            return result;
+        }
 
         result = ICorProfilerInfo5.SetEnterLeaveFunctionHooks3WithInfo(functionEnter, functionLeave, functionTailCall);
 
-        Console.WriteLine($"SetEnterLeaveFunctionHooks3WithInfo returned {result}");
+        if (!result)
+        {
+            Console.WriteLine($"SetEnterLeaveFunctionHooks3WithInfo failed with {result}");
+            return result;
+        }
 
         return HResult.S_OK;
     }
